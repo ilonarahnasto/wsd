@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if error_message %}
+    <p><strong>{{ error_message }}</strong></p>
+{% endif %}
+
+{% if user.is_authenticated and user.is_active%}
+
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-body" id="taulukko">
+
+          <h1>Games</h1>
+
+          <div id="search_container">
+              <form role="search" method="get" action="/games/search/">
+                  <div class="input-group search-input-group">
+                      <input type="text" class="form-control" id="searchBox" class="form-control" name="q" value="{{ query }}" placeholder="Search" >
+                      <span class="input-group-addon">
+                          <button type="submit">
+                              <span class="glyphicon glyphicon-search" value="search"></span>
+                          </button>
+                      </span>
+                  </div>
+              </form>
+          </div>
+
+          {% if results or all_games %}
+
+              <div class="table-responsive">
+                  <table class="table table-striped">
+                      <thead>
+                          <tr>
+                              <th>Title</th>
+                              <th>Uploader</th>
+                              <th>Genre</th>
+                              <th>Description</th>
+                              <th>Date</th>
+                              <th>Buy/Play</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% if results %}
+                              {% for game in results %}
+                                  <tr>
+                                      <td><a href="{% url 'games:detail' game.id %}">{{ game.name }}</a></td>
+                                      <td>{{ game.uploader }}</td>
+                                      <td>{% for genre in game.genre %} {{ genre }} {% endfor %}</td>
+                                      <td>{{ game.description }}</td>
+                                      <td><small>{{ game.date }}</small></td>
+                                      <td>
+                                        {% if user.id in game.bought or game.uploader == user %}
+                                            <a href="{% url 'games:detail' game.id %}" class="btn btn-default btn-sm" role="button" style="width:75px;">Play</a>
+                                        {% else %}
+                                            <a href="{% url 'games:payment' game_id=game.id user_id=user.id  %}" class="btn btn-primary btn-sm" role="button" style="width:75px;"><span class="glyphicon glyphicon-shopping-cart" style="padding-right:5px;"></span> {{ game.price }} €</a>
+                                        {% endif %}
+                                      </td>
+                                  </tr>
+                              {% endfor %}
+
+                          {% elif all_games %}
+
+                              {% for game in all_games %}
+                                  <tr>
+                                      <td><a href="{% url 'games:detail' game.id %}">{{ game.name }}</a></td>
+                                      <td>{{ game.uploader }}</td>
+
+                                  {% for genre in game.genre %}
+                                      <td>{{ genre }}</td>
+                                  {% endfor %}
+                                      <td>{{ game.description }}</td>
+                                      <td><small>{{ game.date }}</small></td>
+                                      <td>
+                                          {% if user.id in game.bought or game.uploader == user %}
+                                              <a href="{% url 'games:detail' game.id %}" class="btn btn-default btn-sm" role="button" style="width:75px;">Play</a>
+                                          {% else %}
+                                              <a href="{% url 'games:payment' game_id=game.id user_id=user.id  %}" class="btn btn-primary btn-sm" role="button" style="width:75px;"><span class="glyphicon glyphicon-shopping-cart" style="padding-right:5px;"></span> {{ game.price }} €</a>
+                                          {% endif %}
+                                      </td>
+                                  </tr>
+                              {% endfor %}
+
+                          {% endif %}
+                      </tbody>
+                  </table>
+              </div>
+
+            {% else %}
+
+                <div class="alert alert-warning" role="alert">No games found!</div>
+
+            {% endif %}
+            {% if all_games %}
+            <hr>
+            <h1 style="margin-top:50px;">Games you own</h1>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Uploader</th>
+                            <th>Genre</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                            <th>Buy/Play</th>
+                        </tr>
+                    </thead>
+
+                    {% for game in all_games_alph %}
+                        {% if user.id in game.bought or user == game.uploader %}
+
+                            <tbody>
+                                <tr>
+                                    <td><a href="{% url 'games:detail' game.id %}">{{ game.name }}</a></td>
+                                    <td>{{ game.uploader }}</td>
+                                    <!--<td>{{ game.genre }}</td>-->
+                                    <td>{% for genre in game.genre %} {{ genre }} {% endfor %}</td>
+                                    <td>{{ game.description }}</td>
+                                    <td><small>{{ game.date }}</small></td>
+                                    <td>
+                                        <a href="{% url 'games:detail' game.id %}" class="btn btn-default btn-sm" role="button" style="width:75px;">Play</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        {% endif %}
+                    {% endfor %}
+
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% else %}
+
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-body" id="taulukko">
+            <h1>Games</h1>
+            <div class="alert alert-warning" role="alert">You need to be logged in to see the games!</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

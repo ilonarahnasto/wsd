@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Game Store | Confirm payment{% endblock %}
+{% block content %}
+
+{% if user.is_authenticated and user.is_active %}
+
+    <div class="payment">
+
+        <div class="container-fluid">
+            <div class="panel panel-default">
+                <div class="panel-body" id="taulukko">
+                    <h1>You're about to buy {{ gamename }}</h1>
+                    <form action="http://payments.webcourse.niksula.hut.fi/pay/" method="POST" width="40px" style="margin: auto;">
+                        <input type="hidden" name="pid" value="{{ pid }}" />
+                        <input type="hidden" name="sid" value="wsd2016" />
+                        <input type="hidden" name="success_url"
+                                value="{{ detailurl }}" />
+                        <input type="hidden" name="cancel_url"
+                                value="{{ gamesurl }}" />
+                        <input type="hidden" name="error_url"
+                                value="{{ errorurl }}" />
+                        <input type="hidden" name="checksum" value="{{ checksum }}" />
+                        <input type="hidden" id="id_amount" name="amount" value="{{ price }}" />
+                        <div id="button_container" style="width: 40px; margin: auto; padding-bottom: 10px;">
+                          <button type="submit" class="btn btn-success btn" style="width: 80px;">OK</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-body" id="taulukko">
+                <div class="alert alert-warning" role="alert">You need to be logged in to buy a game!</div>
+            </div>
+        </div>
+    </div>
+
+{% endif %}
+
+<script type="text/javascript">
+    document.getElementById("back").onclick = function () {
+        location.href = "{{ gamesurl }}";
+    };
+</script>
+
+{% endblock %}

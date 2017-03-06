@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Game Store | {{ game.name }}{% endblock %}
+{% block games_active %}active{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated and user.is_active %}
+    {% if user.id in game.bought or game.uploader == user %}
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-sm-4 col-md-3">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <a href="{% url 'games:detail' game.id %}">
+                                {% if game.image %}
+                                    <img src="{{ game.image }}" class="img-responsive">
+                                {% else %}
+                                    <h3>No image to display</h3>
+                                {% endif %}
+                            </a>
+                            <h1>{{ game.name }}</h1>
+                            {% for genre in game.genre %}<h3><small>Genre: {{ genre }}<br>{% endfor %}Uploader: {{ game.uploader }}</small></h3>
+                            {% if user == game.uploader %}
+                                <hr>
+                                <h4>Stats:</h4>
+                                <small><p>Times bought: {{ game.timesbought }}</p>
+                                <p style="margin-bottom: 20px;">Times played: {{ game.timesplayed }}</p></small>
+                                <a href="{% url 'games:delete' game.id %}" class="btn btn-danger btn-sm" role="button">Delete</a><br><br>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-8 col-md-9">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <iframe id="receiver" width="500px" height="250px" style="border:1px solid lightgrey;" src="{{ game.game }}"></iframe>
+                            <hr>
+
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="save"></div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h4>Your high score:</h4>
+                                    <form role="highscores" method="get" action="{% url 'games:add_highscore' game_id=game.id user_id=user.id %}">
+                                      <div id="highscore" type="text" name="score" value="{{ score }}" style="margin-bottom:30px;">0</div>
+                                      <button class="btn btn-success btn-sm" role="button">Submit High Score</button>
+                                    </form><br>
+                                </div>
+                                <div id="scores" class="col-md-8">
+                                    <h4>High Scores Top 10:</h4>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Player</th>
+                                                    <th>Score</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                            {% for score in topscores %}
+
+                                                <tr>
+                                                    <td>{{ score.0 }}</td>
+                                                    <td>{{ score.1 }}</td>
+                                                </tr>
+
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+    {% else %}
+        <div class="alert alert-warning" role="alert">You need to buy this game to play it!</div>
+    {% endif %}
+
+{% else %}
+    <div class="alert alert-warning" role="alert">You need to be logged in to play games!</div>
+{% endif %}
+
+<script>
+
+$(function() {
+  $('form').on('submit', function(e) {
+    var score = window.parent.document.getElementById('highscore').innerHTML
+    e.preventDefault();
+    $.ajax({
+      url: $(this).attr('action'),
+      method: $(this).attr('method'),
+      data: {
+        score: score
+      },
+      success: function(data) {
+        $('#save').html(data);
+        $.ajax({
+          url: '{% url 'games:get_highscores' game_id=game.id %}',
+          method: $(this).attr('method'),
+          dat: {
+            score: score
+          },
+          success: function(dat) {
+            $('#scores').html(dat)
+          }
+        });
+      }
+    });
+
+  });
+});
+
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+var tallennettuPeli;
+
+// Listen to message from child window
+eventer(messageEvent,function(e) {
+  if(e.data.messageType == 'SCORE'){
+
+    window.parent.document.getElementById('highscore').innerHTML = e.data.score;
+
+
+  } else if(e.data.messageType == 'SAVE'){
+    //console.log("JavaScript: ", e.data.gameState);
+    //console.log("JSON: ", JSON.stringify(e.data.gameState));
+    var tallennettu = JSON.stringify(e.data.gameState);
+    var json = JSON.parse(tallennettu);
+    console.log("Game state: Score:", json.score, " , Items: ", json.playerItems);
+    tallennettuPeli = json;
+    console.log(tallennettuPeli);
+  } else if(e.data.messageType == 'LOAD_REQUEST'){
+    if(tallennettuPeli == null) {
+      var message = {
+          "messageType": "ERROR",
+          "info": "Didn't find any game!"
+      };
+      var receiver = document.getElementById('receiver').contentWindow
+      receiver.postMessage(message, "*");
+    } else {
+      var message = {
+          "messageType": "LOAD",
+          "gameState": tallennettuPeli
+      };
+      console.log(message);
+      var receiver = document.getElementById('receiver').contentWindow
+      receiver.postMessage(message, "*");
+    }
+  } else if(e.data.messageType == 'SETTING'){
+    window.parent.document.getElementById('receiver').width = e.data.options.width;
+    window.parent.document.getElementById('receiver').height = e.data.options.height;
+  }{
+
+  }
+},false);
+</script>
+
+
+{% endblock %}

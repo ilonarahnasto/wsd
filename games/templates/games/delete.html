@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Game Store | Delete {{ game.name }}{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated and user == game.uploader %}
+
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-body" id="taulukko">
+            <h1>You are about to delete {{ game.name }}</h1>
+            <form action="" method="POST" width="40px" style="margin: auto;">
+            {% csrf_token %}
+                <div id="button_container" style="width: 40px; margin: auto; padding-bottom: 10px;">
+                    <button id="delete" type="submit" class="btn btn-success btn" style="width: 80px;">OK</button>
+                </div>
+            </form>
+            <div id="button_container" style="width: 40px; margin: auto;">
+                <button id="cancel" type="cancel" style="width: 80px;" class="btn btn-danger btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-body" id="taulukko">
+            <div class="alert alert-warning" role="alert">You don't have the rights to delete this game!</div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+<script type="text/javascript">
+    document.getElementById("cancel").onclick = function () {
+        location.href = "{{ detailurl }}";
+    };
+</script>
+
+{% endblock %}

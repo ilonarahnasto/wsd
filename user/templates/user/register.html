@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+<body>
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-body" id="taulukko">
+                <h1>Register</h1>
+                <div class="container">
+
+                    {% if registered %}
+
+                        <div class="alert alert-success" role="alert">Thank you for registering! Please activate your profile by the link you received to start gaming. </div>
+                        <a href="{{ activationlink }}"> Click here to activate your profile <a>
+
+                    {% else %}
+
+                        <form class="form-signin" id="user_form" method="post" action="/user/register/" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <label for="id_username" class="sr-only">Username:</label>
+                            <input id="id_username" class="form-control" name="username" type="text" placeholder="Username" required /><br>
+
+                            <label for="id_email" class="sr-only">Email:</label>
+                            <input id="id_email" class="form-control" name="email" type="text" placeholder="Email" required /><br>
+
+                            <label for="id_password" class="sr-only">Password:</label>
+                            <input id="id_password" class="form-control" name="password" type="password" placeholder="Password" required /><br>
+
+                            <button class="btn btn-lg btn-primary btn-block" type="submit" name="submit" value="Register" />Register</button>
+                        </form>
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+{% endblock %}

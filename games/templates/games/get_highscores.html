@@ -1,0 +1,25 @@
+<h4>High scores:</h4>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+
+{% for score in topscores %}
+
+            <tr>
+                <td>{{ score.0 }}</td>
+                <td>{{ score.1 }}</td>
+            </tr>
+
+
+    <!--<div>{{ score.0 }} scored {{ score.1 }}</div>-->
+{% endfor %}
+        </tbody>
+    </table>
+</div>
